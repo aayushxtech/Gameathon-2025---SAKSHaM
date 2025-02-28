@@ -17,6 +17,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { ThemedText } from "@/components/ThemedText";
+import { createEvent } from "@/services/eventService";
 
 interface HostEventModalProps {
   visible: boolean;
@@ -105,8 +106,13 @@ const HostEventModal: React.FC<HostEventModalProps> = ({
       newErrors.organizer = "Organizer is required";
     if (!formData.imageUri) newErrors.imageUri = "Event image is required";
 
-    // Check if date is in the future
-    if (formData.date <= new Date()) {
+    // Compare dates by setting both to start of day
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const eventDate = new Date(formData.date);
+    eventDate.setHours(0, 0, 0, 0);
+
+    if (eventDate < today) {
       newErrors.date = "Event date must be in the future";
     }
 
@@ -114,20 +120,27 @@ const HostEventModal: React.FC<HostEventModalProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (validateForm()) {
-      onSubmit(formData);
-      // Reset form data
-      setFormData({
-        title: "",
-        description: "",
-        date: new Date(),
-        location: "",
-        organizer: "",
-        imageUri: null,
-        category: "workshop",
-      });
-      onClose();
+      try {
+        await createEvent(formData);
+        // Reset form data
+        setFormData({
+          title: "",
+          description: "",
+          date: new Date(),
+          location: "",
+          organizer: "",
+          imageUri: null,
+          category: "workshop",
+        });
+        onClose();
+        Alert.alert("Success", "Event created successfully!", [{ text: "OK" }]);
+      } catch (error) {
+        Alert.alert("Error", "Failed to create event. Please try again.", [
+          { text: "OK" },
+        ]);
+      }
     } else {
       Alert.alert("Form Error", "Please fill all required fields correctly.");
     }

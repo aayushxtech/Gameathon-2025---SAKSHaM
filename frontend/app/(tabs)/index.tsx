@@ -8,7 +8,7 @@ import {
   View,
   Alert,
 } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Animated, { FadeInUp, FadeIn } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -18,6 +18,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import ProfileButton from "../components/ProfileButton";
 import HostEventModal, { EventFormData } from "../components/HostEventModal";
+import { fetchEvents } from "@/services/eventService";
 
 const { width } = Dimensions.get("window");
 
@@ -111,6 +112,46 @@ export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [events, setEvents] = useState<Event[]>(climateEvents);
 
+  useEffect(() => {
+    loadEvents();
+  }, []);
+
+  const loadEvents = async () => {
+    try {
+      const fetchedEvents = await fetchEvents();
+      // Transform the fetched events to match the Event interface
+      const transformedEvents = fetchedEvents.map(
+        (event: {
+          id: string;
+          date: string;
+          title?: string;
+          description?: string;
+          image?: { uri?: string };
+          location?: string;
+          organizer?: string;
+        }) => ({
+          id: parseInt(event.id) || Math.floor(Math.random() * 1000),
+          title: event.title || "Event Title",
+          description: event.description || "No description available",
+          image: {
+            uri:
+              event.image?.uri ||
+              "https://images.unsplash.com/photo-1607946683673-c6d46bc96303",
+          },
+          date: event.date,
+          location: event.location || "Location not specified",
+          organizer: event.organizer || "Unknown organizer",
+        })
+      );
+      setEvents(transformedEvents);
+    } catch (error) {
+      console.error("Error loading events:", error);
+      Alert.alert("Error", "Failed to load events. Please try again later.", [
+        { text: "OK" },
+      ]);
+    }
+  };
+
   const categories = [
     { id: "all", name: "All Events", icon: "calendar-alt" },
     { id: "workshop", name: "Workshops", icon: "chalkboard-teacher" },
@@ -122,31 +163,17 @@ export default function HomeScreen() {
     setExpandedEvent(expandedEvent === eventId ? null : eventId);
   };
 
-  const handleCreateEvent = (formData: EventFormData) => {
-    // Create a new event from the form data
-    const newEvent: Event = {
-      id: events.length + 1,
-      title: formData.title,
-      description: formData.description,
-      image: { uri: formData.imageUri || "" },
-      date: formData.date.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      }),
-      location: formData.location,
-      organizer: formData.organizer,
-    };
-
-    // Add the new event to the events list
-    setEvents([newEvent, ...events]);
-
-    // Show success message
-    Alert.alert(
-      "Event Created",
-      "Your event has been successfully created and is now listed.",
-      [{ text: "OK" }]
-    );
+  const handleCreateEvent = async (formData: EventFormData) => {
+    try {
+      await createEvent(formData);
+      // Refresh the events list
+      await loadEvents();
+      Alert.alert("Success", "Event created successfully!", [{ text: "OK" }]);
+    } catch (error) {
+      Alert.alert("Error", "Failed to create event. Please try again.", [
+        { text: "OK" },
+      ]);
+    }
   };
 
   return (
@@ -537,3 +564,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 });
+function createEvent(formData: EventFormData) {
+  throw new Error("Function not implemented.");
+}
