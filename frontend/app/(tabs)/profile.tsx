@@ -1,10 +1,16 @@
-import React from 'react';
-import { StyleSheet, ScrollView, Image, View, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { Stack } from 'expo-router';
-import Animated, { FadeInUp } from 'react-native-reanimated';
+import React from "react";
+import {
+  StyleSheet,
+  ScrollView,
+  Image,
+  View,
+  TouchableOpacity,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { Stack } from "expo-router";
+import Animated, { FadeInUp } from "react-native-reanimated";
 
 interface UserProfile {
   name: string;
@@ -24,7 +30,7 @@ const userProfile: UserProfile = {
   name: "Rahul Sharma",
   email: "rahul.sharma@email.com",
   profilePic: { uri: "https://randomuser.me/api/portraits/men/32.jpg" },
-  ciiScore: 275
+  ciiScore: 275,
 };
 
 // Leaderboard data with Indian names
@@ -43,35 +49,33 @@ const leaderboardData: LeaderboardEntry[] = [
 
 // Helper function to determine badge based on CII score
 const getBadge = (score: number): { name: string; color: string } => {
-  if (score >= 400) return { name: "Platinum", color: '#B9F2FF' };
-  if (score >= 300) return { name: "Gold", color: '#FFD700' };
-  if (score >= 200) return { name: "Silver", color: '#C0C0C0' };
-  if (score >= 100) return { name: "Bronze", color: '#CD7F32' };
-  return { name: "Beginner", color: '#A4A4A4' };
+  if (score >= 400) return { name: "Platinum", color: "#B9F2FF" };
+  if (score >= 300) return { name: "Gold", color: "#FFD700" };
+  if (score >= 200) return { name: "Silver", color: "#C0C0C0" };
+  if (score >= 100) return { name: "Bronze", color: "#CD7F32" };
+  return { name: "Beginner", color: "#A4A4A4" };
 };
 
 export default function ProfileScreen() {
   const router = useRouter();
   const userBadge = getBadge(userProfile.ciiScore);
-  
+
   // Find user's ranking
-  const userRanking = leaderboardData.findIndex(entry => entry.name === userProfile.name) + 1;
+  const userRanking =
+    leaderboardData.findIndex((entry) => entry.name === userProfile.name) + 1;
 
   return (
     <ThemedView style={styles.container}>
-      <Stack.Screen 
+      <Stack.Screen
         options={{
           headerShown: false,
-        }} 
+        }}
       />
 
       {/* Header */}
-      <Animated.View 
-        entering={FadeInUp.duration(800)}
-        style={styles.header}
-      >
-        <TouchableOpacity 
-          style={styles.backButton} 
+      <Animated.View entering={FadeInUp.duration(800)} style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
           onPress={() => router.back()}
         >
           <ThemedText style={styles.backButtonText}>← Back</ThemedText>
@@ -81,85 +85,92 @@ export default function ProfileScreen() {
 
       <ScrollView style={styles.content}>
         {/* User Profile Section */}
-        <Animated.View 
+        <Animated.View
           entering={FadeInUp.delay(200)}
           style={styles.profileCard}
         >
-          <Image 
-            source={userProfile.profilePic} 
-            style={styles.profilePic} 
-          />
-          
+          <Image source={userProfile.profilePic} style={styles.profilePic} />
+
           <ThemedView style={styles.userInfo}>
             <ThemedText style={styles.userName}>{userProfile.name}</ThemedText>
-            <ThemedText style={styles.userEmail}>{userProfile.email}</ThemedText>
-            
+            <ThemedText style={styles.userEmail}>
+              {userProfile.email}
+            </ThemedText>
+
             <ThemedView style={styles.badgeContainer}>
-              <ThemedView style={[styles.badge, { backgroundColor: userBadge.color }]}>
-                <ThemedText style={styles.badgeText}>{userBadge.name}</ThemedText>
+              <ThemedView
+                style={[styles.badge, { backgroundColor: userBadge.color }]}
+              >
+                <ThemedText style={styles.badgeText}>
+                  {userBadge.name}
+                </ThemedText>
               </ThemedView>
             </ThemedView>
           </ThemedView>
         </Animated.View>
 
         {/* CII Score Card */}
-        <Animated.View 
-          entering={FadeInUp.delay(300)}
-          style={styles.scoreCard}
-        >
+        <Animated.View entering={FadeInUp.delay(300)} style={styles.scoreCard}>
           <ThemedText style={styles.scoreTitle}>Your CII Score</ThemedText>
-          <ThemedText style={styles.scoreValue}>{userProfile.ciiScore}</ThemedText>
+          <ThemedText style={styles.scoreValue}>
+            {userProfile.ciiScore}
+          </ThemedText>
           <ThemedView style={styles.rankingContainer}>
             <ThemedText style={styles.rankingText}>
-              You are ranked <ThemedText style={styles.rankNumber}>#{userRanking}</ThemedText>
+              You are ranked{" "}
+              <ThemedText style={styles.rankNumber}>#{userRanking}</ThemedText>
             </ThemedText>
           </ThemedView>
         </Animated.View>
 
         {/* Leaderboard */}
-        <Animated.View 
+        <Animated.View
           entering={FadeInUp.delay(400)}
           style={styles.leaderboardCard}
         >
           <ThemedText style={styles.leaderboardTitle}>Leaderboard</ThemedText>
-          
+
           <ThemedView style={styles.leaderboardHeader}>
             <ThemedText style={styles.rankColumnHeader}>Rank</ThemedText>
             <ThemedText style={styles.nameColumnHeader}>Name</ThemedText>
             <ThemedText style={styles.scoreColumnHeader}>Score</ThemedText>
           </ThemedView>
-          
+
           {leaderboardData.map((entry, index) => (
-            <ThemedView 
+            <ThemedView
               key={entry.id}
               style={[
                 styles.leaderboardRow,
-                entry.name === userProfile.name ? styles.highlightedRow : null
+                entry.name === userProfile.name ? styles.highlightedRow : null,
               ]}
             >
               <ThemedText style={styles.rankColumn}>
                 {index < 3 ? (
                   <ThemedText style={styles.topRank}>
-                    {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                    {index === 0 ? "🥇" : index === 1 ? "🥈" : "🥉"}
                   </ThemedText>
                 ) : (
                   `#${index + 1}`
                 )}
               </ThemedText>
-              
-              <ThemedText 
+
+              <ThemedText
                 style={[
-                  styles.nameColumn, 
-                  entry.name === userProfile.name ? styles.highlightedText : null
+                  styles.nameColumn,
+                  entry.name === userProfile.name
+                    ? styles.highlightedText
+                    : null,
                 ]}
               >
                 {entry.name}
               </ThemedText>
-              
-              <ThemedText 
+
+              <ThemedText
                 style={[
-                  styles.scoreColumn, 
-                  entry.name === userProfile.name ? styles.highlightedText : null
+                  styles.scoreColumn,
+                  entry.name === userProfile.name
+                    ? styles.highlightedText
+                    : null,
                 ]}
               >
                 {entry.ciiScore}
@@ -167,51 +178,69 @@ export default function ProfileScreen() {
             </ThemedView>
           ))}
         </Animated.View>
-        
+
         {/* Badge Information */}
-        <Animated.View 
+        <Animated.View
           entering={FadeInUp.delay(500)}
           style={styles.badgeInfoCard}
         >
-          <ThemedText style={styles.badgeInfoTitle}>CII Badge Levels</ThemedText>
-          
+          <ThemedText style={styles.badgeInfoTitle}>
+            CII Badge Levels
+          </ThemedText>
+
           <ThemedView style={styles.badgeRow}>
-            <ThemedView style={[styles.badgeIcon, { backgroundColor: '#B9F2FF' }]}>
+            <ThemedView
+              style={[styles.badgeIcon, { backgroundColor: "#B9F2FF" }]}
+            >
               <ThemedText style={styles.badgeIconText}>P</ThemedText>
             </ThemedView>
             <ThemedView style={styles.badgeInfo}>
               <ThemedText style={styles.badgeName}>Platinum</ThemedText>
-              <ThemedText style={styles.badgeRequirement}>400+ points</ThemedText>
+              <ThemedText style={styles.badgeRequirement}>
+                400+ points
+              </ThemedText>
             </ThemedView>
           </ThemedView>
-          
+
           <ThemedView style={styles.badgeRow}>
-            <ThemedView style={[styles.badgeIcon, { backgroundColor: '#FFD700' }]}>
+            <ThemedView
+              style={[styles.badgeIcon, { backgroundColor: "#FFD700" }]}
+            >
               <ThemedText style={styles.badgeIconText}>G</ThemedText>
             </ThemedView>
             <ThemedView style={styles.badgeInfo}>
               <ThemedText style={styles.badgeName}>Gold</ThemedText>
-              <ThemedText style={styles.badgeRequirement}>300+ points</ThemedText>
+              <ThemedText style={styles.badgeRequirement}>
+                300+ points
+              </ThemedText>
             </ThemedView>
           </ThemedView>
-          
+
           <ThemedView style={styles.badgeRow}>
-            <ThemedView style={[styles.badgeIcon, { backgroundColor: '#C0C0C0' }]}>
+            <ThemedView
+              style={[styles.badgeIcon, { backgroundColor: "#C0C0C0" }]}
+            >
               <ThemedText style={styles.badgeIconText}>S</ThemedText>
             </ThemedView>
             <ThemedView style={styles.badgeInfo}>
               <ThemedText style={styles.badgeName}>Silver</ThemedText>
-              <ThemedText style={styles.badgeRequirement}>200+ points</ThemedText>
+              <ThemedText style={styles.badgeRequirement}>
+                200+ points
+              </ThemedText>
             </ThemedView>
           </ThemedView>
-          
+
           <ThemedView style={styles.badgeRow}>
-            <ThemedView style={[styles.badgeIcon, { backgroundColor: '#CD7F32' }]}>
+            <ThemedView
+              style={[styles.badgeIcon, { backgroundColor: "#CD7F32" }]}
+            >
               <ThemedText style={styles.badgeIconText}>B</ThemedText>
             </ThemedView>
             <ThemedView style={styles.badgeInfo}>
               <ThemedText style={styles.badgeName}>Bronze</ThemedText>
-              <ThemedText style={styles.badgeRequirement}>100+ points</ThemedText>
+              <ThemedText style={styles.badgeRequirement}>
+                100+ points
+              </ThemedText>
             </ThemedView>
           </ThemedView>
         </Animated.View>
@@ -223,40 +252,40 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f8ff',
+    backgroundColor: "white",
   },
   header: {
     padding: 16,
-    backgroundColor: '#2E8B57',
+    backgroundColor: "#2E8B57",
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     paddingTop: 50,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   backButton: {
     marginRight: 16,
   },
   backButtonText: {
-    color: '#ffffff',
+    color: "#ffffff",
     fontSize: 18,
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontWeight: "bold",
+    color: "#ffffff",
   },
   content: {
     flex: 1,
     padding: 16,
   },
   profileCard: {
-    flexDirection: 'row',
-    backgroundColor: '#ffffff',
+    flexDirection: "row",
+    backgroundColor: "#000",
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -270,21 +299,21 @@ const styles = StyleSheet.create({
   },
   userInfo: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   userName: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 4,
-    color: '#2E8B57',
+    color: "white",
   },
   userEmail: {
     fontSize: 14,
-    color: '#666',
+    color: "white",
     marginBottom: 8,
   },
   badgeContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   badge: {
     paddingHorizontal: 12,
@@ -294,53 +323,54 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 12,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
   scoreCard: {
-    backgroundColor: '#2E8B57',
+    backgroundColor: "#2E8B57",
     borderRadius: 16,
     padding: 20,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
   scoreTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 8,
+    fontSize: 10,
+
+    fontWeight: "bold",
+    color: "#ffffff",
+    marginBottom: 10,
   },
   scoreValue: {
-    fontSize: 42,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#ffffff",
     marginBottom: 8,
   },
   rankingContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: "rgba(1, 1, 1, 0.2)",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
   },
   rankingText: {
     fontSize: 14,
-    color: '#ffffff',
+    color: "#ffffff",
   },
   rankNumber: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 16,
   },
   leaderboardCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -348,75 +378,75 @@ const styles = StyleSheet.create({
   },
   leaderboardTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2E8B57',
+    fontWeight: "bold",
+    color: "#2E8B57",
     marginBottom: 16,
   },
   leaderboardHeader: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "white",
     marginBottom: 8,
   },
   rankColumnHeader: {
     width: 50,
     fontSize: 14,
-    color: '#666',
+    color: "white",
   },
   nameColumnHeader: {
     flex: 1,
     fontSize: 14,
-    color: '#666',
+    color: "white",
   },
   scoreColumnHeader: {
     width: 60,
     fontSize: 14,
-    color: '#666',
-    textAlign: 'right',
+    color: "white",
+    textAlign: "right",
   },
   leaderboardRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-    alignItems: 'center',
+    borderBottomColor: "white",
+    alignItems: "center",
   },
   highlightedRow: {
-    backgroundColor: 'rgba(46, 139, 87, 0.1)',
+    backgroundColor: "#2E8B57",
     borderRadius: 8,
   },
   rankColumn: {
     width: 50,
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#666',
+    fontWeight: "bold",
+    color: "white",
   },
   nameColumn: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
+    color: "white",
   },
   scoreColumn: {
     width: 60,
     fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'right',
-    color: '#2E8B57',
+    fontWeight: "bold",
+    textAlign: "right",
+    color: "white",
   },
   topRank: {
     fontSize: 20,
   },
   highlightedText: {
-    fontWeight: 'bold',
-    color: '#2E8B57',
+    fontWeight: "bold",
+    color: "white",
   },
   badgeInfoCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     borderRadius: 16,
     padding: 16,
     marginBottom: 24,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -424,41 +454,41 @@ const styles = StyleSheet.create({
   },
   badgeInfoTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2E8B57',
+    fontWeight: "bold",
+    color: "#2E8B57",
     marginBottom: 16,
   },
   badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 12,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: "white",
   },
   badgeIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 12,
   },
   badgeIconText: {
     fontSize: 14,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "black",
   },
   badgeInfo: {
     flex: 1,
   },
   badgeName: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "white",
   },
   badgeRequirement: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
   },
 });
