@@ -1,37 +1,25 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   ScrollView,
   Image,
   View,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Stack } from "expo-router";
 import Animated, { FadeInUp } from "react-native-reanimated";
-
-interface UserProfile {
-  name: string;
-  email: string;
-  profilePic: { uri: string };
-  ciiScore: number;
-}
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { CarbonTrackingForm } from "@/components/CarbonTrackingForm";
 
 interface LeaderboardEntry {
   id: number;
   name: string;
   ciiScore: number;
 }
-
-// Current user profile data
-const userProfile: UserProfile = {
-  name: "Rahul Sharma",
-  email: "rahul.sharma@email.com",
-  profilePic: { uri: "https://randomuser.me/api/portraits/men/32.jpg" },
-  ciiScore: 275,
-};
 
 // Leaderboard data with Indian names
 const leaderboardData: LeaderboardEntry[] = [
@@ -58,11 +46,38 @@ const getBadge = (score: number): { name: string; color: string } => {
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const userBadge = getBadge(userProfile.ciiScore);
+  const { profile, loading, error } = useUserProfile();
+  const [isFormVisible, setIsFormVisible] = useState(false);
+
+  const handleTrackingSubmit = (data: any) => {
+    // Here you would handle the submission of tracking data
+    console.log("Tracking data:", data);
+    // You can add API call here to submit the data
+  };
+
+  if (loading) {
+    return (
+      <ThemedView style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color="#2E8B57" />
+      </ThemedView>
+    );
+  }
+
+  if (error || !profile) {
+    return (
+      <ThemedView style={[styles.container, styles.centerContent]}>
+        <ThemedText style={styles.errorText}>
+          {error || "Failed to load profile"}
+        </ThemedText>
+      </ThemedView>
+    );
+  }
+
+  const userBadge = getBadge(profile.ciiScore);
 
   // Find user's ranking
   const userRanking =
-    leaderboardData.findIndex((entry) => entry.name === userProfile.name) + 1;
+    leaderboardData.findIndex((entry) => entry.name === profile.name) + 1;
 
   return (
     <ThemedView style={styles.container}>
@@ -89,13 +104,11 @@ export default function ProfileScreen() {
           entering={FadeInUp.delay(200)}
           style={styles.profileCard}
         >
-          <Image source={userProfile.profilePic} style={styles.profilePic} />
+          <Image source={profile.profilePic} style={styles.profilePic} />
 
           <ThemedView style={styles.userInfo}>
-            <ThemedText style={styles.userName}>{userProfile.name}</ThemedText>
-            <ThemedText style={styles.userEmail}>
-              {userProfile.email}
-            </ThemedText>
+            <ThemedText style={styles.userName}>{profile.name}</ThemedText>
+            <ThemedText style={styles.userEmail}>{profile.email}</ThemedText>
 
             <ThemedView style={styles.badgeContainer}>
               <ThemedView
@@ -109,12 +122,25 @@ export default function ProfileScreen() {
           </ThemedView>
         </Animated.View>
 
+        {/* Add Track Carbon Button */}
+        <Animated.View
+          entering={FadeInUp.delay(350)}
+          style={styles.trackButtonContainer}
+        >
+          <TouchableOpacity
+            style={styles.trackButton}
+            onPress={() => setIsFormVisible(true)}
+          >
+            <ThemedText style={styles.trackButtonText}>
+              Track Carbon Footprint
+            </ThemedText>
+          </TouchableOpacity>
+        </Animated.View>
+
         {/* CII Score Card */}
         <Animated.View entering={FadeInUp.delay(300)} style={styles.scoreCard}>
           <ThemedText style={styles.scoreTitle}>Your CII Score</ThemedText>
-          <ThemedText style={styles.scoreValue}>
-            {userProfile.ciiScore}
-          </ThemedText>
+          <ThemedText style={styles.scoreValue}>{profile.ciiScore}</ThemedText>
           <ThemedView style={styles.rankingContainer}>
             <ThemedText style={styles.rankingText}>
               You are ranked{" "}
@@ -141,7 +167,7 @@ export default function ProfileScreen() {
               key={entry.id}
               style={[
                 styles.leaderboardRow,
-                entry.name === userProfile.name ? styles.highlightedRow : null,
+                entry.name === profile.name ? styles.highlightedRow : null,
               ]}
             >
               <ThemedText style={styles.rankColumn}>
@@ -157,9 +183,7 @@ export default function ProfileScreen() {
               <ThemedText
                 style={[
                   styles.nameColumn,
-                  entry.name === userProfile.name
-                    ? styles.highlightedText
-                    : null,
+                  entry.name === profile.name ? styles.highlightedText : null,
                 ]}
               >
                 {entry.name}
@@ -168,9 +192,7 @@ export default function ProfileScreen() {
               <ThemedText
                 style={[
                   styles.scoreColumn,
-                  entry.name === userProfile.name
-                    ? styles.highlightedText
-                    : null,
+                  entry.name === profile.name ? styles.highlightedText : null,
                 ]}
               >
                 {entry.ciiScore}
@@ -244,6 +266,13 @@ export default function ProfileScreen() {
             </ThemedView>
           </ThemedView>
         </Animated.View>
+
+        {/* Carbon Tracking Form Modal */}
+        <CarbonTrackingForm
+          visible={isFormVisible}
+          onClose={() => setIsFormVisible(false)}
+          onSubmit={handleTrackingSubmit}
+        />
       </ScrollView>
     </ThemedView>
   );
@@ -490,5 +519,34 @@ const styles = StyleSheet.create({
   badgeRequirement: {
     fontSize: 14,
     color: "#666",
+  },
+  centerContent: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    color: "red",
+    fontSize: 16,
+    textAlign: "center",
+    padding: 20,
+  },
+  trackButtonContainer: {
+    marginBottom: 16,
+  },
+  trackButton: {
+    backgroundColor: "#2E8B57",
+    padding: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  trackButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });

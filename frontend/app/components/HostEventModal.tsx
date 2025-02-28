@@ -218,7 +218,7 @@ const HostEventModal: React.FC<HostEventModalProps> = ({
 
               {/* Event Date */}
               <View style={styles.formGroup}>
-                <ThemedText style={styles.label}>Event Date*</ThemedText>
+                <ThemedText style={styles.label}>Event Date</ThemedText>
                 <TouchableOpacity
                   style={[
                     styles.dateSelector,
