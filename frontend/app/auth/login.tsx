@@ -10,9 +10,13 @@ import {
   Dimensions,
   ScrollView,
   Keyboard,
+  Alert,
 } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { auth, firestore } from "@/firebaseConfig";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -85,14 +89,61 @@ export default function LoginScreen() {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Sign in with Firebase auth
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      // Check if the user document exists in Firestore
+      const userId = userCredential.user.uid;
+      const userDocRef = doc(firestore, "users", userId);
+      const userDoc = await getDoc(userDocRef);
+
+      // If the user document doesn't exist, create it (handles users created outside the app)
+      if (!userDoc.exists()) {
+        const displayName =
+          userCredential.user.displayName || email.split("@")[0];
+        await setDoc(userDocRef, {
+          uid: userId,
+          displayName: displayName,
+          email: email,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          role: "user",
+          phoneNumber: userCredential.user.phoneNumber || null,
+          photoURL: userCredential.user.photoURL || null,
+          preferences: {
+            notifications: true,
+            darkMode: false,
+          },
+          favorites: [],
+          completed: [],
+        });
+        console.log("Created missing user document for:", userId);
+      }
+
+      console.log("User signed in:", userCredential.user);
 
       // Navigate to main app after successful login
       router.replace("/(tabs)");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
-      setErrorMessage("Login failed. Please try again.");
+
+      // Handle specific Firebase auth errors
+      let errorMsg = "Login failed. Please try again.";
+      if (error.code === "auth/user-not-found") {
+        errorMsg = "No account found with this email.";
+      } else if (error.code === "auth/wrong-password") {
+        errorMsg = "Incorrect password.";
+      } else if (error.code === "auth/invalid-email") {
+        errorMsg = "Invalid email format.";
+      } else if (error.code === "auth/too-many-requests") {
+        errorMsg = "Too many login attempts. Please try again later.";
+      }
+
+      setErrorMessage(errorMsg);
     } finally {
       setIsLoading(false);
     }

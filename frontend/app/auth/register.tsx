@@ -12,9 +12,13 @@ import {
   Animated,
   Dimensions,
   ScrollView,
+  Alert,
 } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { auth, firestore } from "@/firebaseConfig";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -129,17 +133,57 @@ export default function RegisterScreen() {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Create user with Firebase auth
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
-      // TODO: Replace with actual registration logic
-      console.log("Registering with:", { name, email, password });
+      // Update user profile with name
+      await updateProfile(userCredential.user, {
+        displayName: name,
+      });
+
+      // Create a user document in Firestore
+      const userId = userCredential.user.uid;
+      const userDocRef = doc(firestore, "users", userId);
+
+      await setDoc(userDocRef, {
+        uid: userId,
+        displayName: name,
+        email: email,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        role: "user",
+        phoneNumber: null,
+        photoURL: null,
+        preferences: {
+          notifications: true,
+          darkMode: false,
+        },
+        favorites: [],
+        completed: [],
+      });
+
+      console.log("User registered and document created:", userId);
 
       // Navigate to main app after successful registration
       router.replace("/(tabs)");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Registration error:", error);
-      setErrorMessage("Registration failed. Please try again.");
+
+      // Handle specific Firebase auth errors
+      let errorMsg = "Registration failed. Please try again.";
+      if (error.code === "auth/email-already-in-use") {
+        errorMsg = "This email is already registered. Please login instead.";
+      } else if (error.code === "auth/invalid-email") {
+        errorMsg = "Invalid email format.";
+      } else if (error.code === "auth/weak-password") {
+        errorMsg = "Password is too weak. Use at least 6 characters.";
+      }
+
+      setErrorMessage(errorMsg);
       startShake();
     } finally {
       setIsLoading(false);
