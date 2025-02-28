@@ -3,7 +3,12 @@ import React from "react";
 import { Platform } from "react-native";
 
 import { HapticTab } from "@/components/HapticTab";
-import { IconSymbol } from "@/components/ui/IconSymbol";
+import {
+  FontAwesome5,
+  MaterialCommunityIcons,
+  Ionicons,
+  FontAwesome,
+} from "@expo/vector-icons";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
@@ -21,7 +26,6 @@ export default function TabsLayout() {
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
             position: "absolute",
           },
           default: {},
@@ -33,7 +37,31 @@ export default function TabsLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color, size }) => (
-            <IconSymbol size={28} name="house" color={color} />
+            <FontAwesome5 name="home" size={24} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="tracker"
+        options={{
+          title: "Carbon Tracker",
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons
+              name="molecule-co2"
+              size={28}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="challenges"
+        options={{
+          title: "Challenges",
+          tabBarIcon: ({ color }) => (
+            <FontAwesome5 name="fire" size={24} color={color} />
           ),
         }}
       />
@@ -43,7 +71,7 @@ export default function TabsLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="person.fill" color={color} />
+            <FontAwesome5 name="user-alt" size={22} color={color} />
           ),
         }}
       />
