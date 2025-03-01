@@ -48,7 +48,8 @@ export default function StoryCampaignScreen() {
   };
 
   const handleBackPress = () => {
-    router.back();
+    // Navigate directly to the story selection screen
+    router.replace("/story");
   };
 
   // Debugging

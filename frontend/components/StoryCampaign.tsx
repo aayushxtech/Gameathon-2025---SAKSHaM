@@ -125,6 +125,19 @@ export default function StoryCampaign({
   const [narrativeIndex, setNarrativeIndex] = useState(0);
   const [showAttackEffect, setShowAttackEffect] = useState(false);
   const [villainHealth, setVillainHealth] = useState(villain.currentHealth);
+  const [showVictoryScreen, setShowVictoryScreen] = useState(false);
+
+  // Track victory screen visibility
+  useEffect(() => {
+    if (villainHealth === 0) {
+      setShowVictoryScreen(true);
+    }
+  }, [villainHealth]);
+
+  // Handle closing the victory screen
+  const handleCloseVictory = () => {
+    setShowVictoryScreen(false);
+  };
 
   // Animated values
   const shakeAnimation = useSharedValue(0);
@@ -198,6 +211,11 @@ export default function StoryCampaign({
 
   return (
     <ThemedView style={styles.container}>
+      {/* Back Button - Using explicit navigation to story */}
+      <TouchableOpacity style={styles.backButton} onPress={onBack}>
+        <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+      </TouchableOpacity>
+
       {/* Chapter Title */}
       <LinearGradient
         colors={["#D32F2F", "#B71C1C"]}
@@ -397,12 +415,19 @@ export default function StoryCampaign({
       </View>
 
       {/* Victory Message (when villain health is 0) */}
-      {villainHealth === 0 && (
+      {showVictoryScreen && (
         <Animated.View style={styles.victoryContainer} entering={FadeIn}>
           <LinearGradient
             colors={["rgba(211, 47, 47, 0.9)", "rgba(183, 28, 28, 0.9)"]}
             style={styles.victoryGradient}
           >
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={handleCloseVictory}
+            >
+              <Ionicons name="close" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+
             <View style={styles.victoryContent}>
               <ThemedText style={styles.victoryTitle}>Victory!</ThemedText>
               <ThemedText style={styles.victoryText}>
@@ -466,6 +491,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     textAlign: "center",
+    color: "black",
   },
   narrativeNav: {
     flexDirection: "row",
@@ -748,5 +774,24 @@ const styles = StyleSheet.create({
     color: "#D32F2F",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  backButton: {
+    position: "absolute",
+    top: 10,
+    left: 10,
+    zIndex: 10,
+    padding: 10,
+    borderRadius: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+
+  closeButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    zIndex: 10,
   },
 });
