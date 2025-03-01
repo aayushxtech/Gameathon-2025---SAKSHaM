@@ -8,7 +8,7 @@ import {
   Dimensions,
   ImageBackground,
 } from "react-native";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import Animated, { FadeInUp, FadeIn } from "react-native-reanimated";
@@ -151,6 +151,7 @@ const storyChapters: StoryChapter[] = [
 ];
 
 export default function StoryScreen() {
+  const router = useRouter();
   const [userXp, setUserXp] = useState(150);
   const [selectedQuest, setSelectedQuest] = useState<DailyQuest | null>(null);
 
@@ -289,8 +290,21 @@ export default function StoryScreen() {
                 Join the fight to save Mother Earth from the forces of pollution
                 and climate chaos
               </ThemedText>
-              <TouchableOpacity style={styles.storyBannerButton}>
-                <ThemedText style={styles.storyBannerButtonText}>
+              <TouchableOpacity
+                style={styles.continueButton}
+                onPress={() => {
+                  // Navigate to the story campaign screen with the current chapter
+                  // Find the first unlocked chapter or the first one if none are unlocked
+                  const currentChapter =
+                    storyChapters.find((chapter) => !chapter.isLocked) ||
+                    storyChapters[0];
+                  router.push({
+                    pathname: "/story-campaign",
+                    params: { chapter: currentChapter.id },
+                  });
+                }}
+              >
+                <ThemedText style={styles.buttonText}>
                   Continue Adventure
                 </ThemedText>
               </TouchableOpacity>
@@ -443,6 +457,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "white",
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "600",
+    fontSize: 14,
   },
   header: {
     width: "100%",
@@ -615,6 +634,10 @@ const styles = StyleSheet.create({
     width: "80%",
   },
   storyBannerButton: {
+    backgroundColor: "#4CAF50",
+    paddingVertical: 8,
+  },
+  continueButton: {
     backgroundColor: "#4CAF50",
     paddingVertical: 8,
     paddingHorizontal: 16,

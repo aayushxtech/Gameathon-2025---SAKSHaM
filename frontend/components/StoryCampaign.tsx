@@ -40,6 +40,8 @@ interface StoryCampaignProps {
   userXp: number;
   onUseXp: (amount: number) => void;
   currentChapter: number;
+  onBack: () => void;
+  onComplete: () => void;
 }
 
 const villains: Record<number, Villain> = {
@@ -114,6 +116,8 @@ export default function StoryCampaign({
   userXp,
   onUseXp,
   currentChapter,
+  onBack,
+  onComplete,
 }: StoryCampaignProps) {
   const villain = villains[currentChapter] || villains[1];
   const narrative =
@@ -410,7 +414,10 @@ export default function StoryCampaign({
                 unlock the next chapter.
               </ThemedText>
 
-              <TouchableOpacity style={styles.continueButton}>
+              <TouchableOpacity
+                style={styles.continueButton}
+                onPress={onComplete}
+              >
                 <ThemedText style={styles.continueButtonText}>
                   Continue Your Journey
                 </ThemedText>
